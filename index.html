@@ -1,13 +1,201 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>映画評価サイト</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #2b5876, #4e4376);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 500px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        label {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+            display: block;
+            text-align: left;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            border-color: #6a4cff;
+            outline: none;
+        }
+        button {
+            background-color: #6a4cff;
+            color: #fff;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #4c2ecc;
+        }
+        .movie-list {
+            margin-top: 30px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border-top: 2px solid #ddd;
+            width: 100%;
+        }
+        .movie-item {
+            padding: 15px;
+            background-color: #f7f7f7;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .movie-item:hover {
+            transform: scale(1.05);
+        }
+        .movie-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            flex-grow: 1;
+            padding-right: 20px;
+        }
+        .stars {
+            color: #ffbc00;
+            font-size: 18px;
+            padding-right: 20px;
+        }
+        .delete-btn {
+            background-color: #ff4f4f;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;  /* 小さくしたボタン */
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;  /* 小さめのフォント */
+            transition: background-color 0.3s ease;
+            width: 70px;  /* 一定の大きさに統一 */
+            text-align: center;
+        }
+        .delete-btn:hover {
+            background-color: #ff2a2a;
+        }
+        .movie-item button {
+            margin-left: 10px;  /* ボタンに間隔を追加 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>映画評価</h1>
+    <form id="movie-form">
+        <label for="title">映画のタイトル</label>
+        <input type="text" id="title" name="title" placeholder="映画のタイトルを入力" required>
+
+        <label for="rating">評価 (1〜5☆)</label>
+        <select id="rating" name="rating" required>
+            <option value="1">1☆</option>
+            <option value="2">2☆</option>
+            <option value="3">3☆</option>
+            <option value="4">4☆</option>
+            <option value="5">5☆</option>
+        </select>
+
+        <button type="submit">評価を保存</button>
+    </form>
+
+    <div class="movie-list" id="movie-list"></div>
+</div>
+
+<script>
+    let movieRatings = [];
+
+    document.getElementById('movie-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const title = document.getElementById('title').value;
+        const rating = document.getElementById('rating').value;
+
+        movieRatings.push({ title, rating });
+
+        document.getElementById('movie-form').reset();
+
+        displayMovies();
+    });
+
+    function displayMovies() {
+        const movieListDiv = document.getElementById('movie-list');
+        movieListDiv.innerHTML = '';
+
+        movieRatings.forEach(function(movie, index) {
+            const movieItem = document.createElement('div');
+            movieItem.classList.add('movie-item');
+
+            const movieTitle = document.createElement('div');
+            movieTitle.classList.add('movie-title');
+            movieTitle.textContent = movie.title;
+
+            const movieRating = document.createElement('div');
+            movieRating.classList.add('stars');
+            movieRating.textContent = '★'.repeat(movie.rating);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-btn');
+            deleteButton.textContent = '削除';
+            deleteButton.onclick = function() {
+                deleteMovie(index);
+            };
+
+            movieItem.appendChild(movieTitle);
+            movieItem.appendChild(movieRating);
+            movieItem.appendChild(deleteButton);
+            movieListDiv.appendChild(movieItem);
+        });
+    }
+
+    function deleteMovie(index) {
+        movieRatings.splice(index, 1);  // 指定されたインデックスの映画を削除
+        displayMovies();  // 映画リストを再描画
+    }
+</script>
+
+</body>
 </html>
