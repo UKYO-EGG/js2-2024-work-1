@@ -15,7 +15,9 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            flex-direction: column;
         }
+
         .container {
             background-color: rgba(255, 255, 255, 0.9);
             padding: 30px;
@@ -24,11 +26,13 @@
             width: 500px;
             text-align: center;
         }
+
         h1 {
             font-size: 24px;
             margin-bottom: 20px;
             color: #333;
         }
+
         label {
             font-size: 16px;
             margin-bottom: 5px;
@@ -36,6 +40,7 @@
             display: block;
             text-align: left;
         }
+
         input, select {
             width: 100%;
             padding: 12px;
@@ -46,10 +51,12 @@
             box-sizing: border-box;
             transition: all 0.3s ease;
         }
+
         input:focus, select:focus {
             border-color: #6a4cff;
             outline: none;
         }
+
         button {
             background-color: #6a4cff;
             color: #fff;
@@ -61,9 +68,11 @@
             transition: background-color 0.3s ease;
             width: 100%;
         }
+
         button:hover {
             background-color: #4c2ecc;
         }
+
         .movie-list {
             margin-top: 30px;
             text-align: left;
@@ -73,6 +82,7 @@
             border-top: 2px solid #ddd;
             width: 100%;
         }
+
         .movie-item {
             padding: 15px;
             background-color: #f7f7f7;
@@ -87,9 +97,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .movie-item:hover {
             transform: scale(1.05);
         }
+
         .movie-title {
             font-size: 18px;
             font-weight: bold;
@@ -97,34 +109,90 @@
             flex-grow: 1;
             padding-right: 20px;
         }
+
         .stars {
             color: #ffbc00;
             font-size: 18px;
             padding-right: 20px;
         }
+
         .delete-btn {
             background-color: #ff4f4f;
             color: #fff;
             border: none;
-            padding: 6px 12px;  /* 小さくしたボタン */
+            padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;  /* 小さめのフォント */
+            font-size: 12px;
             transition: background-color 0.3s ease;
-            width: 70px;  /* 一定の大きさに統一 */
+            width: 70px;
             text-align: center;
         }
+
         .delete-btn:hover {
             background-color: #ff2a2a;
         }
+
         .movie-item button {
-            margin-left: 10px;  /* ボタンに間隔を追加 */
+            margin-left: 10px;
+        }
+
+        .auth-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-container a {
+            color: #6a4cff;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .auth-container a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+<!-- アカウント作成画面 -->
+<div class="container" id="signup-container">
+    <h1>アカウント作成</h1>
+    <form id="signup-form">
+        <label for="new-username">ユーザー名</label>
+        <input type="text" id="new-username" name="username" placeholder="新しいユーザー名を入力" required>
+
+        <label for="new-password">パスワード</label>
+        <input type="password" id="new-password" name="password" placeholder="パスワードを入力" required>
+
+        <button type="submit">アカウント作成</button>
+    </form>
+    <div class="auth-container">
+        <p>既にアカウントをお持ちですか? <a href="#" id="go-to-login">ログイン</a></p>
+    </div>
+</div>
+
+<!-- ログイン画面 -->
+<div class="container" id="login-container" style="display: none;">
+    <h1>ログイン</h1>
+    <form id="login-form">
+        <label for="username">ユーザー名</label>
+        <input type="text" id="username" name="username" placeholder="ユーザー名を入力" required>
+
+        <label for="password">パスワード</label>
+        <input type="password" id="password" name="password" placeholder="パスワードを入力" required>
+
+        <button type="submit">ログイン</button>
+    </form>
+    <div class="auth-container">
+        <p>アカウントを作成していませんか? <a href="#" id="go-to-signup">アカウント作成</a></p>
+    </div>
+</div>
+
+<!-- 映画評価画面 -->
+<div class="container" id="movie-container" style="display: none;">
     <h1>映画評価</h1>
     <form id="movie-form">
         <label for="title">映画のタイトル</label>
@@ -147,7 +215,62 @@
 
 <script>
     let movieRatings = [];
+    let currentUser = null;
 
+    // アカウント作成処理
+    document.getElementById('signup-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('new-username').value;
+        const password = document.getElementById('new-password').value;
+        
+        // ユーザー名がすでに存在しないか確認
+        if (localStorage.getItem(username)) {
+            alert("そのユーザー名はすでに使用されています。");
+        } else {
+            // ユーザー情報をlocalStorageに保存
+            const userData = {
+                password: password,
+                movieRatings: []
+            };
+            localStorage.setItem(username, JSON.stringify(userData));
+            alert("アカウント作成が完了しました。ログインしてください。");
+            switchToLoginContainer();
+        }
+    });
+
+    // ログイン処理
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const storedUserData = JSON.parse(localStorage.getItem(username));
+
+        if (storedUserData && storedUserData.password === password) {
+            currentUser = username;
+            movieRatings = storedUserData.movieRatings;
+            switchToMovieContainer();
+            displayMovies();
+        } else {
+            alert("ユーザー名またはパスワードが間違っています。");
+        }
+    });
+
+    // ログイン画面に切り替え
+    document.getElementById('go-to-login').addEventListener('click', function(event) {
+        event.preventDefault();
+        switchToLoginContainer();
+    });
+
+    // アカウント作成画面に切り替え
+    document.getElementById('go-to-signup').addEventListener('click', function(event) {
+        event.preventDefault();
+        switchToSignupContainer();
+    });
+
+    // 映画評価フォーム処理
     document.getElementById('movie-form').addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -156,11 +279,19 @@
 
         movieRatings.push({ title, rating });
 
-        document.getElementById('movie-form').reset();
+        saveUserData();
 
+        document.getElementById('movie-form').reset();
         displayMovies();
     });
 
+    // ユーザーデータを保存
+    function saveUserData() {
+        const userData = { password: document.getElementById('password').value, movieRatings };
+        localStorage.setItem(currentUser, JSON.stringify(userData));
+    }
+
+    // 映画リストを表示
     function displayMovies() {
         const movieListDiv = document.getElementById('movie-list');
         movieListDiv.innerHTML = '';
@@ -191,9 +322,32 @@
         });
     }
 
+    // 映画を削除
     function deleteMovie(index) {
-        movieRatings.splice(index, 1);  // 指定されたインデックスの映画を削除
-        displayMovies();  // 映画リストを再描画
+        movieRatings.splice(index, 1);
+        saveUserData();
+        displayMovies();
+    }
+
+    // ログイン後の画面切り替え
+    function switchToMovieContainer() {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('signup-container').style.display = 'none';
+        document.getElementById('movie-container').style.display = 'block';
+    }
+
+    // ログイン画面に切り替え
+    function switchToLoginContainer() {
+        document.getElementById('signup-container').style.display = 'none';
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('movie-container').style.display = 'none';
+    }
+
+    // アカウント作成画面に切り替え
+    function switchToSignupContainer() {
+        document.getElementById('signup-container').style.display = 'block';
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('movie-container').style.display = 'none';
     }
 </script>
 
